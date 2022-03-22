@@ -3,7 +3,11 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { Browser } from "puppeteer";
 import type { Browser as BrowserCore } from "puppeteer-core";
 
-const baseUrl = "https://gallery.so";
+const allowedHostnames = [/^https:\/\/.*\.okpc\.app\//];
+
+if (process.env.NODE_ENV !== "production") {
+  allowedHostnames.push(/^http:\/\/localhost(:\d+)?\//);
+}
 
 const getBrowserInstance = async () => {
   const executablePath = await chromium.executablePath;
@@ -27,27 +31,21 @@ const getBrowserInstance = async () => {
 };
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const path = req.query.path as string;
-  if (!path) {
-    res.status(400).json({ error: { code: "MISSING_PATH" } });
+  const url = req.query.url as string | undefined;
+  if (!url) {
+    res.status(400).json({ error: { code: "MISSING_URL" } });
     return;
   }
 
-  const url = new URL(path, baseUrl);
-  if (!url.toString().startsWith(baseUrl)) {
-    res.status(400).json({ error: { code: "INVALID_PATH" } });
+  if (!allowedHostnames.some((hostname) => hostname.test(url))) {
+    res.status(400).json({ error: { code: "INVALID_URL" } });
     return;
   }
 
   const fallback =
     typeof req.query.fallback === "string" ? req.query.fallback : null;
 
-  const width = parseInt(req.query.width as string) || 600;
-  const height = parseInt(req.query.height as string) || 300;
-  const pixelDensity = parseInt(req.query.pixelDensity as string) || 2;
-
-  url.searchParams.set("width", width.toString());
-  url.searchParams.set("height", height.toString());
+  const pixelDensity = parseInt(req.query.pixelDensity as string) || 1;
 
   let browser: Browser | BrowserCore | null = null;
 
