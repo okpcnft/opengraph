@@ -3,10 +3,13 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { Browser } from "puppeteer";
 import type { Browser as BrowserCore } from "puppeteer-core";
 
-const allowedHostnames = [/^https:\/\/.*\.okpc\.app\//];
+const allowedHostnames = [
+  /^https:\/\/([\w-]+\.)?okpc\.app\//i,
+  /^https:\/\/[\w-]+-okpc\.vercel\.app\//i,
+];
 
 if (process.env.NODE_ENV !== "production") {
-  allowedHostnames.push(/^http:\/\/localhost(:\d+)?\//);
+  allowedHostnames.push(/^http:\/\/localhost(:\d+)?\//i);
 }
 
 const getBrowserInstance = async () => {
