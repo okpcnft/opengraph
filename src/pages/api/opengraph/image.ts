@@ -84,7 +84,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       throw new Error("No #opengraph-image element found at path");
     }
 
-    const imageBuffer = await element.screenshot({ type: format, quality });
+    const imageBuffer = await element.screenshot({
+      type: format,
+      quality: format === "png" ? undefined : quality,
+    });
 
     // s-maxage:
     //   images are considered "fresh" for 8 hours
