@@ -60,6 +60,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const format = includes(allowedFormats, req.query.format)
     ? req.query.format
     : "png";
+  const quality = parseInt(req.query.quality as string) || 70;
 
   let browser: Browser | BrowserCore | null = null;
 
@@ -83,7 +84,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       throw new Error("No #opengraph-image element found at path");
     }
 
-    const imageBuffer = await element.screenshot({ type: format });
+    const imageBuffer = await element.screenshot({ type: format, quality });
 
     // s-maxage:
     //   images are considered "fresh" for 8 hours
