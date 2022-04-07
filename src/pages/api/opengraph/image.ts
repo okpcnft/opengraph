@@ -12,6 +12,14 @@ if (process.env.NODE_ENV !== "production") {
   allowedHostnames.push(/^http:\/\/localhost(:\d+)?\//i);
 }
 
+const allowedFormats = ["png", "jpeg", "webp"] as const;
+function includes<T extends U, U>(
+  values: ReadonlyArray<T>,
+  value: U
+): value is T {
+  return values.includes(value as T);
+}
+
 const getBrowserInstance = async () => {
   const executablePath = await chromium.executablePath;
 
@@ -49,6 +57,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     typeof req.query.fallback === "string" ? req.query.fallback : null;
 
   const pixelDensity = parseInt(req.query.pixelDensity as string) || 1;
+  const format = includes(allowedFormats, req.query.format)
+    ? req.query.format
+    : "png";
 
   let browser: Browser | BrowserCore | null = null;
 
@@ -72,7 +83,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       throw new Error("No #opengraph-image element found at path");
     }
 
-    const imageBuffer = await element.screenshot({ type: "png" });
+    const imageBuffer = await element.screenshot({ type: format });
 
     // s-maxage:
     //   images are considered "fresh" for 8 hours
