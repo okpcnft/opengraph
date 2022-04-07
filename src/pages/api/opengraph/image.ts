@@ -98,7 +98,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       `s-maxage=${60 * 60 * 8}, stale-while-revalidate=${60 * 60 * 24}`
     );
 
-    res.setHeader("Content-Type", "image/png");
+    res.setHeader("Content-Type", `image/${format}`);
     res.send(imageBuffer);
   } catch (error: unknown) {
     // TODO: log this to some error tracking service?
